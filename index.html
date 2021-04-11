@@ -16,21 +16,42 @@
 	<input type="submit" class="button" value="Submit">
 	</form>
 
-	<script type="text/javascript">
-		async function main() {
-		  await loadPyodide({ indexURL : "https://cdn.jsdelivr.net/pyodide/v0.17.0a2/full/" });
-		  // Pyodide is now ready to use...
-		  console.log(pyodide.runPython(`
-		    import sys
-		    sys.version
-		  `));
-		  console.log(pyodide.runPython("print(1 + 2)"));
+  <p>You can execute any Python code. Just enter something in the box below and click the button.</p>
+  <input id='code' value='sum([1, 2, 3, 4, 5])'>
+  <button onclick='evaluatePython()'>Run</button>
+  <br>
+  <br>
+  <div>
+    Output:
+  </div>
+  <textarea id='output' style='width: 100%;' rows='6' disabled></textarea>
 
-		};
+  <script>
+    const output = document.getElementById("output");
+    const code = document.getElementById("code");
 
-		main();
+    function addToOutput(s) {
+      output.value += '>>>' + code.value + '\n' + s + '\n';
+    }
 
-	</script>
+    output.value = 'Initializing...\n';
+    // init Pyodide
+    async function main(){
+      await loadPyodide({ indexURL : 'https://cdn.jsdelivr.net/pyodide/v0.17.0a2/full/' });
+      output.value += 'Ready!\n';
+    }
+    let pyodideReadyPromise = main();
+
+    async function evaluatePython() {
+      await pyodideReadyPromise;
+      try {
+        let output = await pyodide.runPythonAsync(code.value);
+        addToOutput(output);
+      } catch(err) {
+        addToOutput(err);
+      }
+    }
+  </script>
 
 </body>
 
